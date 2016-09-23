@@ -70,7 +70,7 @@ void hstup_frame_dump_pool_init(const u8* pool_start, u32 frame_size)
 	pool_header->pool_header_start = HEADER_START_MARK;
 	pool_header->pool_header_end = HEADER_END_MARK;
 	pool_header->dump_frame_length = frame_size_in_bytes;
-	pool_header->slot_length = sizeof(frame_header_t) + frame_size_in_bytes - sizeof(u32) + END_OF_FRAME_TAG_LEN;
+	pool_header->slot_length = (sizeof(frame_header_t) + frame_size_in_bytes - sizeof(u32) + END_OF_FRAME_TAG_LEN + 3) & ~0x3;
 	pool_header->current_slot = 0;
 	pool_header->max_slot_num = (HSTUP_FRAME_DUMP_POOL_SIZE - sizeof(dump_pool_header_t) + sizeof(u32))/pool_header->slot_length;
 }
@@ -100,7 +100,7 @@ void hstup_dump_frame_content(u32 frame_size, frame_header_t* frame_header, cons
 {
 	if(!frame_header || !frame_content)
 		return;
-	u32 frame_size_in_bytes = (frame_size + 7)>>3;
+	u32 frame_size_in_bytes = (((frame_size + 7)>>3) + 3) & ~0x3;
 	u8* dump_slot_ptr = GLO_NULL;
 	if(frame_size < 200)
 	{
@@ -152,5 +152,5 @@ int main(int argc, char** argv)
 		fwrite(hstup_frame_dump_pool_200_bits, 122888, 1, file_ptr);
 		fclose(file_ptr);
 	}
-	return;	
+	return 0;
 }
